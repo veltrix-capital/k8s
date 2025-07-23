@@ -1,21 +1,22 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: testing-app
+  name: portal-app
+  namespace: default
   labels:
     app: testing-app
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: testing-app
+      app: portal-app
     template:
       metadata:
         labels:
-          app: testing-app
+          app: portal-app
       spec:
         containers:
-        - name: testing-app
+        - name: portal-app
           image: jamesw81290/testing:latest
           ports:
           - containerPort: 8080
