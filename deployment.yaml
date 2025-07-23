@@ -16,7 +16,6 @@ spec:
         app: portal-app
     spec:
       securityContext:
-        enabled: false
         runAsUser: 0
         fsGroup: 0
       containers:
