@@ -15,6 +15,10 @@ spec:
       labels: # These labels must match the selector.matchLabels above.
         app: portal-app
     spec:
+      securityContext:
+        enabled: false
+        runAsUser: 0
+        fsGroup: 0
       containers:
       - name: portal-app
         image: jamesw81290/testing:latest
