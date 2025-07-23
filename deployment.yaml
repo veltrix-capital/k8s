@@ -20,3 +20,7 @@ spec:
         image: jamesw81290/testing:c49570f
         ports:
         - containerPort: 4001
+        securityContext:
+          enabled: true
+          runAsUser: 1001
+          fsGroup: 1001
