@@ -17,6 +17,6 @@ spec:
     spec:
       containers:
       - name: portal-app
-        image: jamesw81290/testing:latest
+        image: jamesw81290/testing:77b13bf
         ports:
         - containerPort: 4001
