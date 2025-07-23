@@ -1,13 +1,15 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: testing-app
+  name: portal-app
+  namespace: default
   labels:
-    app: testing-app
+    app: portal-app
 spec:
   ports:
-    - port: 8080
+    - protocol: TCP
+      port: 80
       targetPort: 8080
   selector:
-    app: testing-app
-  type: ClusterIP
+    app: portal-app
+  type: NodePort
