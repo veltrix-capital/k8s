@@ -3,20 +3,20 @@ kind: Deployment
 metadata:
   name: portal-app
   namespace: testing
-  labels:
-    app: testing-app
+  labels: # These labels identify the Deployment itself (optional).
+    app: portal-app
 spec:
   replicas: 1
   selector:
-    matchLabels:
+    matchLabels: # This is how the Deployment selects its Pods.
       app: portal-app
-    template:
-      metadata:
-        labels:
-          app: portal-app
-      spec:
-        containers:
-        - name: portal-app
-          image: jamesw81290/testing:latest
-          ports:
-          - containerPort: 8080
+  template:
+    metadata:
+      labels: # These labels must match the selector.matchLabels above.
+        app: portal-app
+    spec:
+      containers:
+      - name: portal-app
+        image: jamesw81290/testing:latest
+        ports:
+        - containerPort: 8080
