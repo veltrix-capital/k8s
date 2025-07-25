@@ -20,7 +20,7 @@ spec:
         fsGroup: 1001
       containers:
       - name: portal-app
-        image: jamesw81290/testing:c49570f
+        image: jamesw81290/testing:0c289bc
         ports:
         - containerPort: 4001
         
