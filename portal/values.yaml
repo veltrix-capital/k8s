@@ -1,0 +1,207 @@
+# Portal values
+image:
+  registry: jamesw81290
+  repository: testing
+  tag: "latest"
+  pullPolicy: IfNotPresent
+replicas: 2
+autoscaling:
+  enabled: false
+  minReplicas: 3
+  maxReplicas: 5
+  targetCpu:
+    type: Utilization
+    averageUtilization: 60
+  targetMemory:
+    type: AverageValue
+    averageValue: 300Mi
+rollingUpdate: {}
+# maxSurge: 2
+# maxUnavailable: 25%
+
+applicationPort: 4001
+## Portal Service Configuration
+service:
+  type: ClusterIP
+  # annotations:
+  # loadBalancerIP:
+resources:
+  requests:
+    cpu: 100m
+    memory: 300Mi
+    # limits:
+    #   cpu: 500m
+    #   memory: 1Gi
+sealedSecrets: true
+kms:
+  enabled: false
+  url: https://kms-prod-adrfomonwq-ey.a.run.app
+auth0:
+  audience: accounts
+  domain: auth.request.finance
+scheduler:
+  enabled: false
+  tasks:
+    - name: recurring-invoices
+      args:
+        - invoice:recurring:create
+        - --networkType
+        - live
+      schedule: "0 11 * * *"
+    - name: subscription-bills-creation
+      args:
+        - subscriptions:bills:create:all
+        - --networkType
+        - live
+      schedule: "10 10 * * *"
+    - name: invoice-approvers-notify-test
+      args:
+        - approval:notify
+        - --networkType
+        - test
+      schedule: "0 */2 * * 1-5"
+    - name: invoice-approvers-notify-live
+      args:
+        - approval:notify
+        - --networkType
+        - live
+      schedule: "0 */2 * * 1-5"
+    - name: payso-kyb-reminder
+      args:
+        - users:external-account:payso-kyb-reminder
+      schedule: "0 11 * * *"
+    - name: async-transaction-monitoring
+      args:
+        - tx:monitor:all
+      schedule: "*/30 * * * *"
+  resources:
+    requests:
+      cpu: 200m
+      memory: "0.3Gi"
+    limits:
+      cpu: 400m
+      memory: "1Gi"
+subscriber:
+  enabled: false
+  replicas: 1
+  resources:
+    requests:
+      cpu: 100m
+      memory: "0.3Gi"
+    limits:
+      cpu: 400m
+      memory: "1Gi"
+subscriberRequestUpdated:
+  enabled: false
+  replicas: 1
+  pubsub:
+    subscription: request-updated-sub
+  resources:
+    requests:
+      cpu: 200m
+      memory: "0.3Gi"
+    limits:
+      cpu: 800m
+      memory: "1Gi"
+subscriberCreateRequests:
+  enabled: false
+  replicas: 10
+  pubsub:
+    subscription: create-requests-sub
+  resources:
+    requests:
+      cpu: 100m
+      memory: "0.25Gi"
+    limits:
+      cpu: 200m
+      memory: "0.4Gi"
+subscriberCsvExport:
+  enabled: false
+  replicas: 1
+  pubsub:
+    subscription: csv-export-sub
+  resources:
+    requests:
+      cpu: 200m
+      memory: "0.3Gi"
+    limits:
+      cpu: 800m
+      memory: "1Gi"
+securityContext:
+  # enabled: true
+  # fsGroup: 1001
+  runAsUser: 0
+sync:
+  enabled: false
+  replicas: 1
+  image: "eu.gcr.io/request-240714/api-sync:8845187"
+  debug:
+    graphql: true
+  pubsub:
+    subscription: api-sync-subscription
+  autoscaling:
+    enabled: false
+  resources:
+    requests:
+      cpu: 50m
+      memory: "0.3Gi"
+    limits:
+      cpu: 400m
+      memory: "0.75Gi"
+extraEnv:
+  MONGO_CONNECTION_TIMEOUT_MS: "3000"
+  MONGO_INIT_POOL_SIZE: "30"
+  FLAG_OAUTH: "true"
+  FLAG_APPS: "true"
+  AUTH0_TENANT_NAME: request
+  AUTH0_TENANT_REGION: eu
+  SENDGRID_TEMPLATE_ID: d-4497a4b0c1b44a918b8012ac1d59d088
+  CONFIRMATION_TIMEOUT: "300000"
+  DATABASE_USE_SSL: "true"
+  LOG_LEVEL: "debug"
+  LOG_FORMAT: "json"
+  RETRY_BLOCKS_COUNT: "10"
+  SUBGRAPH_URL: "http://graph-$NETWORK-graphql:8000/subgraphs/name/RequestNetwork/request-storage"
+  ENABLE_BATCH: "true"
+  FLAG_C2F_DOMAINS: "request.finance,request.network,monerium.com"
+  MARBLE_TOPIC: "marble-$NETWORK-batch"
+  KMS_BULK_SIZE: "50"
+  PAYMENTS_SUBGRAPH_URL: "https://api.studio.thegraph.com/query/67444/request-payments-$NETWORK/version/latest"
+  PAYMENTS_SUBGRAPH_URL_SEPOLIA: "https://gateway.thegraph.com/api/5b12bd83a6456e2de9b3bb0b95883796/subgraphs/id/6e8Dcwt3cvsgNU3JYBtRQQ9Sj4P9VVVnXaPjJ3jUpYpY"
+  PAYMENTS_SUBGRAPH_URL_ARBITRUM-ONE: "https://gateway.thegraph.com/api/5b12bd83a6456e2de9b3bb0b95883796/subgraphs/id/3MtDdHbzvBVNBpzUTYXGuDDLgTd1b8bPYwoH1Hdssgp9"
+  PAYMENTS_SUBGRAPH_URL_AVALANCHE: "https://gateway.thegraph.com/api/5b12bd83a6456e2de9b3bb0b95883796/subgraphs/id/A27V4PeZdKHeyuBkehdBJN8cxNtzVpXvYoqkjHUHRCFp"
+  PAYMENTS_SUBGRAPH_URL_BASE: "https://gateway.thegraph.com/api/5b12bd83a6456e2de9b3bb0b95883796/subgraphs/id/CcTtKy6BustyyVZ5XvFD4nLnbkgMBT1vcAEJ3sAx6bRe"
+  PAYMENTS_SUBGRAPH_URL_BSC: "https://gateway.thegraph.com/api/5b12bd83a6456e2de9b3bb0b95883796/subgraphs/id/4PScFUi3CFDbop9XzT6gCDtD4RR8kRzyrzSjrHoXHZBt"
+  PAYMENTS_SUBGRAPH_URL_CELO: "https://gateway.thegraph.com/api/5b12bd83a6456e2de9b3bb0b95883796/subgraphs/id/5ts3PHjMcH2skCgKtvLLNE64WLjbhE5ipruvEcgqyZqC"
+  PAYMENTS_SUBGRAPH_URL_FANTOM: "https://gateway.thegraph.com/api/5b12bd83a6456e2de9b3bb0b95883796/subgraphs/id/6AwmiYo5eY36W526ZDQeAkNBjXjXKYcMLYyYHeM67xAb"
+  PAYMENTS_SUBGRAPH_URL_FUSE: "https://gateway.thegraph.com/api/5b12bd83a6456e2de9b3bb0b95883796/subgraphs/id/EHSpUBa7PAewX7WsaU2jbCKowF5it56yStr6Zgf8aDtx"
+  PAYMENTS_SUBGRAPH_URL_MAINNET: "https://gateway.thegraph.com/api/5b12bd83a6456e2de9b3bb0b95883796/subgraphs/id/5mXPGZRC2Caynh4NyVrTK72DAGB9dfcKmLsnxYWHQ9nd"
+  PAYMENTS_SUBGRAPH_URL_MATIC: "https://gateway.thegraph.com/api/5b12bd83a6456e2de9b3bb0b95883796/subgraphs/id/DPpU1WMxk2Z4H2TAqgwGbVBGpabjbC1972Mynak5jSuR"
+  PAYMENTS_SUBGRAPH_URL_MOONBEAM: "https://gateway.thegraph.com/api/5b12bd83a6456e2de9b3bb0b95883796/subgraphs/id/4Jo3DwA25zyVLeDhyi7cks52dNrkVCWWhQJzm1hKnCfj"
+  PAYMENTS_SUBGRAPH_URL_NEAR: "https://gateway.thegraph.com/api/5b12bd83a6456e2de9b3bb0b95883796/subgraphs/id/9yEg3h46CZiv4VuSqo1erMMBx5sHxRuW5Ai2V8goSpQL"
+  PAYMENTS_SUBGRAPH_URL_NEAR_TESTNET: "https://gateway.thegraph.com/api/5b12bd83a6456e2de9b3bb0b95883796/subgraphs/id/AusVyfndonsMVFrVzckuENLqx8t6kcXuxn6C6VbSGd7M"
+  PAYMENTS_SUBGRAPH_URL_OPTIMISM: "https://gateway.thegraph.com/api/5b12bd83a6456e2de9b3bb0b95883796/subgraphs/id/525fra79nG3Z1w8aPZh3nHsH5zCVetrVmceB1hKcTrTX"
+  PAYMENTS_SUBGRAPH_URL_RONIN: "https://graph-ronin.axiedao.org/subgraphs/name/requestnetwork/request-payments-ronin"
+  PAYMENTS_SUBGRAPH_URL_TOMBCHAIN: "https://graph-node.lif3.com/subgraphs/name/requestnetwork/request-payments-tombchain"
+  PAYMENTS_SUBGRAPH_URL_CORE: "https://thegraph.coredao.org/subgraphs/name/requestnetwork/request-payments-core"
+  PAYMENTS_SUBGRAPH_URL_XDAI: "https://gateway.thegraph.com/api/5b12bd83a6456e2de9b3bb0b95883796/subgraphs/id/2UAW7B94eeeqaL5qUM5FDzTWJcmgA6ta1RcWMo3XuLmU"
+  PAYMENTS_SUBGRAPH_URL_ZKSYNCERA: "https://gateway.thegraph.com/api/5b12bd83a6456e2de9b3bb0b95883796/subgraphs/id/HJNZW9vRSGXrcCVyQMdNKxxuLKeZcV6yMjTCyY6T2oon"
+  PAYMENTS_SUBGRAPH_URL_SONIC: "https://gateway.thegraph.com/api/5b12bd83a6456e2de9b3bb0b95883796/subgraphs/id/CQbtmuANYsChysuXTk9jWP3BD4ArncARVVw1b8JpHiTk"
+  PUBSUB_MAX_MESSAGES: "5"
+  MAX_SUBSCRIBER_MESSAGES_CREATE_REQUESTS: "1"
+  MAX_SUBSCRIBER_MESSAGES_REQUEST_CHANGE: "10"
+  MAX_SUBSCRIBER_MESSAGES_REQUEST_UPDATED: "1"
+  REQUESTS_CREATION_MAX_SIZE: "20"
+  WEBHOOK_TASK_QUEUE_PATH: "projects/request-240714/locations/europe-west1/queues/portal-webhooks"
+  FLAG_STRICT_COUNTRY_CODE: "true"
+  ALCHEMY_API_KEY: mLRC91HInjbcdFfZQfTwP9Rd8EkFqjYX
+  INFURA_API_KEY: 10da443179514e899331aebf694e3997
+  GRAPH_NODE_URL: http://graph-$NETWORK-graphql:8000/subgraphs/name/RequestNetwork/request-storage
+  REQUEST_TECHNOLOGIES_USER_ID: 67936337050f87f1ccea3b28
+  RT_API_STAGING_URL: http://rt-api-staging.production.svc.cluster.local:4001
+  RT_API_LIVE_URL: http://rt-api-prod.production.svc.cluster.local:4001
+  # TRUSTED_CLIENT_IDS' keys are just arbitrary comments
+  # TRUSTED_CLIENT_IDS: prod:aOztubLfi988WiPwhjH2IVpzbAv84NA1,baguette:p8hDRhunNPlbwwF6nXqmbLNUR3adI1oY,baguette-mainnet:Jd4U0pN2S1ohlWOgzEArzIc3NKZyRb3f,realt:U4D4UOKVDXJiZTQvzVZUpAUqLtCPMqYZ,playnance:m1bK9FPNJa3VU0zPvmNMQTxWmEALfOz4
+extraEnvSecrets:
+  FIREBASE_WEB_API_KEY: AgCi/9NNY9Gb8tM8zjTkYBQl1FD2XvzT+BSWV9kXdDcOkZ8yZl+N+yczA//sIJh2otL7IdzFreKkl71dpzFThL641XmoCwEyWLS5prKIGirewmAU22HFCx4So9zso8BOQTUJzlK4olM97/X3Fk76FpfgHWgVWqt6ikK6E06k+pAQnH7FY60j2F4+wpTV4nkQC87bMgW9KKtYCiIMZcyZOV2awwLFCBhC5T48Jqv+y4pXwLSlafa6nLRifrrSQ8LF6YB9yTUHEiDjFGt7Q2HOe4a0oOxI6uxGg/yNIyJ4a1fVPswcJZ6b1kZWBIkY9DR+wBjLsVFIwztPGLUiAHZVUUsRmq5qo4jF++N4n33LpWWCV3O0ILS3YOce6jTDqYnmk6k5+R7WHmeQGiQEZhDiSJeeUD0yTISACWihCJmaMehrWhhxGjvUXSvLqi4FfOpImL9pZLjDCWgZDXnyi/xWzfsqmU6zagP5jVSkPBx+7UemQolYPxU2bMEd3GezlfHAfV3p/ZYvE6FzcjvxiZ+osknq4fq6vtzVR01A/p4HuQ5rt+0xtXHSaQlCYbCMvianchBNM946YnEmW8sBiKN2iLKlAdex2PAw66UfNRV8iCT3Ka10pvRtsUNWOreqJyQNcBPlbq5YjbaVDRI0E6F+M4vVDwuNoxdtCdyioeg4hpDHTbBL0LEZhPi5K0UqZPynY83AcDRhI6aeyODbVWXDrRVUWRljBrlxo7y5LO0VFmCS5kTSKbjvR1c=
+workloadIdentity: portal-sa@request-240714.iam.gserviceaccount.com
