@@ -1,21 +1,26 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: testing-app
-  labels:
-    app: testing-app
+  name: portal-app
+  namespace: testing
+  labels: # These labels identify the Deployment itself (optional).
+    app: portal-app
 spec:
   replicas: 1
   selector:
-    matchLabels:
-      app: testing-app
-    template:
-      metadata:
-        labels:
-          app: testing-app
-      spec:
-        containers:
-        - name: testing-app
-          image: jamesw81290/testing:latest
-          ports:
-          - containerPort: 8080
+    matchLabels: # This is how the Deployment selects its Pods.
+      app: portal-app
+  template:
+    metadata:
+      labels: # These labels must match the selector.matchLabels above.
+        app: portal-app
+    spec:
+      securityContext:
+        runAsUser: 1001
+        fsGroup: 1001
+      containers:
+      - name: portal-app
+        image: jamesw81290/testing:0c289bc
+        ports:
+        - containerPort: 4001
+        
